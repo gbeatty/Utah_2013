@@ -12,7 +12,7 @@ namespace UtahCzmlGenerator
     {
         static void Main(string[] args)
         {
-            System.IO.TextWriter textWriter = System.IO.File.CreateText("snowbird.czml");
+            System.IO.TextWriter textWriter = System.IO.File.CreateText("alta.czml");
             CesiumOutputStream output = new CesiumOutputStream(textWriter);
             output.PrettyFormatting = true;
             output.WriteStartSequence();
@@ -25,7 +25,7 @@ namespace UtahCzmlGenerator
             
             foreach (var v in table.GetData())
             {
-                if (v.FileName.Contains("snowbird"))
+                if (v.FileName.Contains("Alta"))
                 {
                     var fileName = v.FileName;
                     PacketCesiumWriter packetWriter = writer.OpenPacket(output);
