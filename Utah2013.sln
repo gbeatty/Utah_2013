@@ -5,6 +5,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UtahCzmlGenerator", "UtahCz
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "videoTimeReader", "videoTimeReader\videoTimeReader.csproj", "{525D561C-8F31-428F-BA3E-4D7891822DF4}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrailsConverter", "TrailsConverter\TrailsConverter.csproj", "{FAEC3B4D-2BEA-4086-83A3-8FA6DB80FCF5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -19,6 +21,10 @@ Global
 		{525D561C-8F31-428F-BA3E-4D7891822DF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{525D561C-8F31-428F-BA3E-4D7891822DF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{525D561C-8F31-428F-BA3E-4D7891822DF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FAEC3B4D-2BEA-4086-83A3-8FA6DB80FCF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAEC3B4D-2BEA-4086-83A3-8FA6DB80FCF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FAEC3B4D-2BEA-4086-83A3-8FA6DB80FCF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FAEC3B4D-2BEA-4086-83A3-8FA6DB80FCF5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
