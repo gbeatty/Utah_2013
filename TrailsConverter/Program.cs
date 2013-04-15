@@ -17,14 +17,14 @@ namespace TrailsConverter
     {
         static void Main(string[] args)
         {
-            System.IO.TextWriter textWriter = System.IO.File.CreateText(@"G:\Utah_2013\TrailsConverter\AltaTrailsAltitude.czml");
+            System.IO.TextWriter textWriter = System.IO.File.CreateText(@"G:\Utah_2013\TrailsConverter\DeerValleyTrailsAltitude.czml");
             CesiumOutputStream output = new CesiumOutputStream(textWriter);
             output.PrettyFormatting = true;
             output.WriteStartSequence();
 
             CesiumStreamWriter cesiumWriter = new CesiumStreamWriter();
 
-            using (StreamReader reader = File.OpenText(@"G:\Utah_2013\TrailsConverter\AltaTrails.czml"))
+            using (StreamReader reader = File.OpenText(@"G:\Utah_2013\TrailsConverter\DeerValleyTrails.czml"))
             {
                 JArray o = (JArray)JToken.ReadFrom(new JsonTextReader(reader));
                 int numTracks = o.Children().Count();
@@ -72,9 +72,9 @@ namespace TrailsConverter
                             GeoCoordinate prevPoint = cartList[i - 1];
                             GeoCoordinate curPoint = cartList[i];
                             double distance = prevPoint.GetDistanceTo(curPoint);
-                            if (distance > 20.0)
+                            if (distance > 25.0)
                             {
-                                double segments = Math.Ceiling(distance / 20.0);
+                                double segments = Math.Ceiling(distance / 25.0);
                                 double deltaLat = (curPoint.Latitude - prevPoint.Latitude) / segments;
                                 double deltaLon = (curPoint.Longitude - prevPoint.Longitude) / segments;
 

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "videoTimeReader", "videoTim
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrailsConverter", "TrailsConverter\TrailsConverter.csproj", "{FAEC3B4D-2BEA-4086-83A3-8FA6DB80FCF5}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TrailTimesCzmlGenerator", "TrailTimesCzmlGenerator\TrailTimesCzmlGenerator.csproj", "{DA790811-66C8-4D27-A8D3-BF0C13859392}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -25,6 +27,10 @@ Global
 		{FAEC3B4D-2BEA-4086-83A3-8FA6DB80FCF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAEC3B4D-2BEA-4086-83A3-8FA6DB80FCF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAEC3B4D-2BEA-4086-83A3-8FA6DB80FCF5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DA790811-66C8-4D27-A8D3-BF0C13859392}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DA790811-66C8-4D27-A8D3-BF0C13859392}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DA790811-66C8-4D27-A8D3-BF0C13859392}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DA790811-66C8-4D27-A8D3-BF0C13859392}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
