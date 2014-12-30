@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,62 +8,67 @@ using System.Net;
 using CesiumLanguageWriter;
 using System.Drawing;
 using System.Device.Location;
+using SharpKml.Engine;
+using System.Xml;
 
 namespace TrailsConverter
 {
     class Program
     {
+        static KmlFile ParseLegacyFile(String kmlString)
+        {
+            // Manually parse the Xml
+            SharpKml.Base.Parser parser = new SharpKml.Base.Parser();
+            parser.ParseString(kmlString, false); // Ignore the namespaces
+
+            // The element will be stored in parser.Root - wrap it inside
+            // a KmlFile
+            return KmlFile.Create(parser.Root, true);
+        }
+
         static void Main(string[] args)
         {
-            System.IO.TextWriter textWriter = System.IO.File.CreateText(@"G:\Utah_2013\TrailsConverter\DeerValleyTrailsAltitude.czml");
+            System.IO.TextWriter textWriter = System.IO.File.CreateText(@"D:\Cesium\gbeatty-cesium\Apps\SkiTracks\Gallery\DeerValleyTrails.czml");
             CesiumOutputStream output = new CesiumOutputStream(textWriter);
             output.PrettyFormatting = true;
             output.WriteStartSequence();
 
             CesiumStreamWriter cesiumWriter = new CesiumStreamWriter();
 
-            using (StreamReader reader = File.OpenText(@"G:\Utah_2013\TrailsConverter\DeerValleyTrails.czml"))
+            using (StreamReader reader = File.OpenText("D:/Cesium/Utah_2013/TrailsConverter/DeerValleyTrails.kml"))
             {
-                JArray o = (JArray)JToken.ReadFrom(new JsonTextReader(reader));
-                int numTracks = o.Children().Count();
-                foreach (JToken token in o.Children())
+                KmlFile kmlFile = ParseLegacyFile(reader.ReadToEnd());
+
+                var inlined = StyleResolver.InlineStyles(kmlFile.Root);
+                SharpKml.Dom.Kml kml = inlined as SharpKml.Dom.Kml;
+
+                int numLines = 0;
+                foreach (var lineString in kml.Flatten().OfType<SharpKml.Dom.LineString>())
                 {
-                    System.Console.WriteLine(numTracks);
-                    --numTracks;
-                    string trailName = (string)token["label"]["text"];
-                    int red = (int)token["polyline"]["color"]["rgba"][0];
-                    int green = (int)token["polyline"]["color"]["rgba"][1];
-                    int blue = (int)token["polyline"]["color"]["rgba"][2];
-                    float width = (float)token["polyline"]["width"];
+                    ++numLines;
+                }
+
+                int lineNum = 0;
+                foreach (var lineString in kml.Flatten().OfType<SharpKml.Dom.LineString>())
+                {
+                    double percentComplete = (double)lineNum / (double)numLines * 100.0;
+                    ++lineNum;
+                    System.Console.Write(percentComplete);
+                    System.Console.WriteLine("%");
 
                     List<GeoCoordinate> cartList = new List<GeoCoordinate>();
-                    JArray positions = (JArray)token["vertexPositions"]["cartographicRadians"];
-                    int count = 0;
-                    GeoCoordinate lla = new GeoCoordinate();
-                    foreach (JToken value in positions.Children())
+                    foreach (var point in lineString.Coordinates)
                     {
-                        switch (count)
-                        {
-                            case 0:
-                                lla.Longitude = ((double)value) * 180.0 / Math.PI;
-                                ++count;
-                                break;
-                            case 1:
-                                lla.Latitude = ((double)value) * 180.0 / Math.PI;
-                                ++count;
-                                break;
-                            case 2:
-                                //lla.Altitude = (double)value;
-                                cartList.Add(lla);
-                                lla = new GeoCoordinate();
-                                count = 0;
-                                break;
-                        }
+                        GeoCoordinate lla = new GeoCoordinate();
+                        lla.Latitude = point.Latitude;
+                        lla.Longitude = point.Longitude;
+                        lla.Altitude = 0.0;
+                        cartList.Add(lla);
                     }
 
                     // add extra points for higher resolution
                     List<GeoCoordinate> expandedList = new List<GeoCoordinate>();
-                    for(int i=0; i<cartList.Count(); ++i) 
+                    for (int i = 0; i < cartList.Count(); ++i)
                     {
                         if (i > 0)
                         {
@@ -97,44 +100,72 @@ namespace TrailsConverter
                         cart.Latitude = cart.Latitude;
                         cart.Longitude = cart.Longitude;
 
-                        string url = "http://gisdata.usgs.net/xmlwebservices2/elevation_service.asmx/getElevation?" +
-                            "X_Value=" + cart.Longitude.ToString() +
-                            "&Y_Value=" + cart.Latitude.ToString() +
-                            "&Elevation_Units=meters&Source_Layer=&Elevation_Only=true";
+                        string url = "http://ned.usgs.gov/epqs/pqs.php?" +
+                            "x=" + cart.Longitude.ToString() +
+                            "&y=" + cart.Latitude.ToString() +
+                            "&units=Meters&output=xml";
 
 
 
                         WebRequest wrGETURL = WebRequest.Create(url);
                         Stream response = wrGETURL.GetResponse().GetResponseStream();
                         StreamReader responseReader = new StreamReader(response);
-                        responseReader.ReadLine(); // ignore first line
-                        string line = responseReader.ReadLine();
-                        line = line.Remove(0, 8);
-                        line = line.Remove(line.IndexOf("<"));
-                        cart.Altitude = Convert.ToDouble(line) - 15;
+
+                        XmlDocument doc = new XmlDocument();
+                        doc.LoadXml(responseReader.ReadToEnd());
+                        XmlNode first = doc.SelectSingleNode("USGS_Elevation_Point_Query_Service");
+                        XmlNode elevation = first.FirstChild.SelectSingleNode("Elevation");
+
+                        cart.Altitude = Convert.ToDouble(elevation.InnerText) - 10.0;
 
                         Cartographic temp = new Cartographic(cart.Longitude, cart.Latitude, cart.Altitude);
                         vertexList.Add(temp);
                     }
 
+                    SharpKml.Dom.Feature feature = lineString.GetParent<SharpKml.Dom.Feature>();
+                    SharpKml.Dom.Style style = StyleResolver.CreateResolvedStyle(
+                        feature,
+                        kmlFile,
+                        SharpKml.Dom.StyleState.Normal, // or StyleState.Highlight
+                        null); // Don't look for external references
+
+
+                    String trailName = feature.Name;
+                    double width = (double)style.Line.Width;
+                    int red = style.Line.Color.Value.Red;
+                    int green = style.Line.Color.Value.Green;
+                    int blue = style.Line.Color.Value.Blue;
+                    int alpha = style.Line.Color.Value.Alpha;
 
                     // write czml
                     PacketCesiumWriter packetWriter = cesiumWriter.OpenPacket(output);
+                    packetWriter.WriteId("document");
+                    packetWriter.WriteName("DeerValleyTrails");
+                    packetWriter.WriteVersion("1.0");
+                    packetWriter.Close();
+
+                    packetWriter = cesiumWriter.OpenPacket(output);
                     packetWriter.WriteId(trailName);
 
                     PolylineCesiumWriter polyline = packetWriter.OpenPolylineProperty();
                     polyline.WriteWidthProperty(width);
-                    polyline.WriteColorProperty(Color.FromArgb(red, green, blue));
+
+                    PolylineMaterialCesiumWriter material = polyline.OpenMaterialProperty();
+                    PolylineOutlineMaterialCesiumWriter outline = material.OpenPolylineOutlineProperty();
+                    outline.WriteOutlineWidthProperty(3.0);
+                    outline.WriteOutlineColorProperty(255, 255, 255, 140);
+                    outline.WriteColorProperty(red, green, blue, alpha);
+                    outline.Close();
+                    material.Close();
+
+                    polyline.WritePositionsPropertyCartographicDegrees(vertexList);
+
                     polyline.Close();
-
-                    PositionListCesiumWriter vertices = packetWriter.OpenVertexPositionsProperty();
-                    vertices.WriteCartographicDegrees(vertexList);
-                    vertices.Close();
-
 
                     packetWriter.Close();
 
                 }
+
             }
 
             output.WriteEndSequence();

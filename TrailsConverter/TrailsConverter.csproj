@@ -33,10 +33,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CesiumLanguageWriter">
-      <HintPath>..\..\czml-writer\DotNet\CesiumLanguageWriter\bin\Debug\CesiumLanguageWriter.dll</HintPath>
+      <HintPath>..\..\czml-writer\DotNet\CesiumLanguageWriter\bin\Release\CesiumLanguageWriter.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>Json45r11\Bin\Net40\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="SharpKml">
+      <HintPath>.\SharpKml.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
